@@ -539,7 +539,15 @@ public sealed partial class ReleaseHardeningTests
         Assert.Contains(rows, preset => preset.Id == loaded.Id);
         Assert.Equal("abc123def4567890", RuntimeBuildCatalogService.SourceCommit(Assert.Single(sources)));
         Assert.True(RuntimeBuildCatalogService.IsAllowedGitSource("https://example.com/repo.git"));
+        Assert.True(RuntimeBuildCatalogService.IsAllowedGitSource("ssh://git@example.com/repo.git"));
+        Assert.True(RuntimeBuildCatalogService.IsAllowedGitSource(Path.GetTempPath()));
         Assert.False(RuntimeBuildCatalogService.IsAllowedGitSource("http://example.com/repo.git"));
+        Assert.True(RuntimeBuildCatalogService.IsHttpsGitSource("https://example.com/repo.git"));
+        Assert.False(RuntimeBuildCatalogService.IsHttpsGitSource("https://user:token@example.com/repo.git"));
+        Assert.False(RuntimeBuildCatalogService.IsHttpsGitSource("ssh://git@example.com/repo.git"));
+        Assert.False(RuntimeBuildCatalogService.IsHttpsGitSource(Path.GetTempPath()));
+        Assert.True(RuntimeBuildCatalogService.IsSafeUiCustomPreset(custom));
+        Assert.False(RuntimeBuildCatalogService.IsSafeUiCustomPreset(custom with { RepoUrl = "ssh://git@example.com/repo.git" }));
         Assert.True(RuntimeBuildCatalogService.IsSafeGitRefName("feature/runtime-build"));
         Assert.False(RuntimeBuildCatalogService.IsSafeGitRefName("bad branch"));
         Assert.Equal(["refs/heads/main", "main"], RuntimeBuildCatalogService.RemoteRefs(loaded));

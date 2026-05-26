@@ -91,6 +91,33 @@ function Resolve-WslExe {
   throw "wsl.exe was not found in the Windows system directory."
 }
 
+function Get-WslDistroNames {
+  param([string] $ResolvedWslExe)
+  try {
+    $raw = & $ResolvedWslExe --list --quiet 2>$null
+    return @($raw | ForEach-Object { ($_ -replace "`0", "").Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) -and $_ -notmatch '^(docker-desktop|docker-desktop-data)$' })
+  } catch {
+    return @()
+  }
+}
+
+function Resolve-WslDistroName {
+  param([string] $ResolvedWslExe, [string] $RequestedDistro)
+  $requested = if ([string]::IsNullOrWhiteSpace($RequestedDistro)) { "Ubuntu-24.04" } else { $RequestedDistro.Trim() }
+  $distros = Get-WslDistroNames $ResolvedWslExe
+  if ($distros.Count -eq 0) { return $requested }
+  if ($distros | Where-Object { $_ -ieq $requested } | Select-Object -First 1) { return $requested }
+  if ($requested -ine "Ubuntu-24.04") { return $requested }
+
+  foreach ($preferred in @("Ubuntu-24.04", "Ubuntu-22.04", "Ubuntu")) {
+    $match = $distros | Where-Object { $_ -ieq $preferred } | Select-Object -First 1
+    if ($match) { return $match }
+  }
+  $ubuntu = $distros | Where-Object { $_ -like "*Ubuntu*" } | Select-Object -First 1
+  if ($ubuntu) { return $ubuntu }
+  return $requested
+}
+
 function Redact-Argument {
   param([string] $Value)
   $uri = $null
@@ -153,6 +180,7 @@ function Test-SafeGitRefName {
 
 if ($Runtime -eq "wsl") {
   $WslExe = Resolve-WslExe $WslExe
+  $WslDistro = Resolve-WslDistroName $WslExe $WslDistro
 } else {
   $GitExe = Resolve-Executable $GitExe "git.exe"
   $CMakeExe = Resolve-Executable $CMakeExe "cmake.exe"
@@ -177,7 +205,7 @@ if ($Runtime -eq "wsl") {
   $SourceQ = Quote-Bash $WslSource
   $BuildQ = Quote-Bash $WslBuild
   $InstallQ = Quote-Bash $WslInstall
-  $MarkerExport = if ([string]::IsNullOrWhiteSpace($ProcessMarker)) { ":" } else { "export LOCAL_LLM_CONSOLE_BUILD_MARKER=$(Quote-Bash $ProcessMarker)" }
+  $MarkerExport = if ([string]::IsNullOrWhiteSpace($ProcessMarker)) { ":" } else { "export LLAMA_CPP_CONSOLE_BUILD_MARKER=$(Quote-Bash $ProcessMarker); export LOCAL_LLM_CONSOLE_BUILD_MARKER=$(Quote-Bash $ProcessMarker)" }
   $CudaPreflight = if ($Cuda) {
 @'
 if command -v nvcc >/dev/null 2>&1; then

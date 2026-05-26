@@ -248,6 +248,18 @@ public static class RuntimeBuildCatalogService
         => IsAllowedGitSource(preset.RepoUrl)
             && (string.IsNullOrWhiteSpace(preset.Branch) || IsSafeGitRefName(preset.Branch));
 
+    public static bool IsSafeUiCustomPreset(RuntimeBuildPreset preset)
+        => IsHttpsGitSource(preset.RepoUrl)
+            && (string.IsNullOrWhiteSpace(preset.Branch) || IsSafeGitRefName(preset.Branch));
+
+    public static bool IsHttpsGitSource(string repoUrl)
+    {
+        var value = (repoUrl ?? "").Trim();
+        return Uri.TryCreate(value, UriKind.Absolute, out var uri)
+            && uri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
+            && string.IsNullOrWhiteSpace(uri.UserInfo);
+    }
+
     public static bool IsAllowedGitSource(string repoUrl)
     {
         var value = (repoUrl ?? "").Trim();

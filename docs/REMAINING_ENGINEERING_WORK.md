@@ -27,6 +27,7 @@ These are broader product items already implied by the release docs:
 - Trusted signing and installer smoke testing on a clean Windows VM.
 - Confirm final GitHub update feed owner/repo and release asset naming.
 - WSL/hardware matrix validation across missing WSL, CPU build tools, CUDA-visible WSL, Vulkan-visible WSL, and unsupported backends.
+- Benchmark WSL runtime source/build staging on `/mnt/<drive>` versus the distro's Linux filesystem; if Linux-side staging wins, preserve Windows-side metadata/cleanup semantics while copying only final runtime artifacts back to the workspace.
 - Runtime archive checksum/signature verification before future downloaded binary runtime registration.
 
 ## Completed This Pass

@@ -119,13 +119,13 @@ public partial class MainWindow
         }
         if (string.IsNullOrWhiteSpace(repoUrl))
         {
-            SetStatus("Enter a Git repository URL or existing local path for the custom runtime repository.");
+            SetStatus("Enter an HTTPS Git repository URL for the custom runtime repository.");
             return;
         }
         var preset = new RuntimeBuildPreset(RuntimeBuildCatalogService.CustomPresetId(label, repoUrl, branch, RuntimeBuildCatalogService.BackendKey(backend)), label, repoUrl, branch, cuda, true, RuntimeBuildCatalogService.BackendKey(backend));
-        if (!RuntimeBuildCatalogService.IsSafePreset(preset))
+        if (!RuntimeBuildCatalogService.IsSafeUiCustomPreset(preset))
         {
-            SetStatus("Custom runtime repository must be HTTPS, SSH, file, or an existing local path with a safe branch/ref.");
+            SetStatus("Custom runtime repository must be an HTTPS Git URL with a safe branch/ref. Local, file, and SSH sources are reserved for manual advanced configuration.");
             return;
         }
         var existing = RuntimeBuildPresetRows().FirstOrDefault(candidate => RuntimeBuildCatalogService.SameRepository(candidate, preset));
@@ -227,12 +227,12 @@ public partial class MainWindow
             }
             if (string.IsNullOrWhiteSpace(repoUrl))
             {
-                ThemedMessageBox.Show(dialog, "Enter a Git repository URL or path.", "Custom repository", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ThemedMessageBox.Show(dialog, "Enter an HTTPS Git repository URL.", "Custom repository", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            if (!RuntimeBuildCatalogService.IsAllowedGitSource(repoUrl))
+            if (!RuntimeBuildCatalogService.IsHttpsGitSource(repoUrl))
             {
-                ThemedMessageBox.Show(dialog, "Use an HTTPS Git URL or an existing local repository path. Insecure HTTP repository URLs are not accepted.", "Custom repository", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ThemedMessageBox.Show(dialog, "Use an HTTPS Git URL without embedded credentials. Local, file, and SSH sources are reserved for manual advanced configuration.", "Custom repository", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             if (!string.IsNullOrWhiteSpace(branch) && !RuntimeBuildCatalogService.IsSafeGitRefName(branch))
