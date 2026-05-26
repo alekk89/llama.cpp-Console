@@ -1,8 +1,9 @@
 # Signing Windows Releases
 
-Public Windows releases should be Authenticode-signed and timestamped before
-upload. The release scripts support signing with a certificate already available
-in the Windows certificate store:
+Trusted Windows releases should be Authenticode-signed and timestamped before
+upload. The current v1.0.0 community release is unsigned and should be described
+as unsigned wherever it is linked. The release scripts support signing with a
+certificate already available in the Windows certificate store:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\publish-app.ps1 -CertificateThumbprint "<cert-thumbprint>" -RequireSigned
@@ -22,9 +23,9 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build-installer.ps1 -C
   and GitHub release provenance. This helps users verify downloads, but it is
   not a substitute for Windows code signing.
 
-## Release Rule
+## Trusted Release Rule
 
-Do not publish a public release unless:
+Do not describe a release as signed, trusted, or production-hardened unless:
 
 1. `LlamaCppConsole.exe` is signed.
 2. `LlamaCppConsole-Setup-<version>-win-x64.exe` is signed.

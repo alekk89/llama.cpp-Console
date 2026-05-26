@@ -14,19 +14,19 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\publish-app.ps1
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build-installer.ps1
 ```
 
-Public release builds must be signed:
+Trusted signed release builds use:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\publish-app.ps1 -CertificateThumbprint "<cert-thumbprint>" -RequireSigned
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build-installer.ps1 -CertificateThumbprint "<cert-thumbprint>" -RequireSigned
 ```
 
-## Must Pass Before Beta
+## Release Gate
 
 - Publish `dist\LlamaCppConsole-win-x64\LlamaCppConsole.exe` from a clean checkout.
 - Build `dist\installer\LlamaCppConsole-Setup-1.0.0-win-x64.exe` from the published app with Inno Setup 6.
 - Confirm the publish folder contains no `.pdb` files.
-- Confirm the published executable and installer each have a matching `.sha256` companion file generated after signing.
+- Confirm the published executable and installer each have a matching `.sha256` companion file. For signed builds, generate the companion file after signing.
 - Confirm fresh installer default path is `D:\LlamaCppConsole` when `D:` exists, `%LocalAppData%\Programs\LlamaCppConsole` when it does not, and that the setup wizard still allows the user to change the install folder.
 - Confirm the installer detects an existing install and reuses its install directory on update or repair.
 - Confirm the final installer page can launch `LlamaCppConsole.exe`.
@@ -120,6 +120,6 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build-installer.ps1 -C
 - Any model-serving mode that does not require an API key.
 - Any completed download registered without expected-size or SHA-256 validation.
 - Any clean-machine startup path that silently assumes hidden developer setup.
-- Any public release artifact that is unsigned.
+- Any release artifact described as signed or trusted when it is unsigned.
 - Any signed install that can be replaced by an unsigned or differently signed update.
 - Any installer uninstall, repair, or update path that deletes models, runtimes, logs, cache, or state without explicit user confirmation.

@@ -1,10 +1,13 @@
-# Current Pre-Release Audit
+# Release Hardening Audit
 
 Audit date: 2026-05-26
 
 ## Executive Summary
 
-Overall release readiness: **ready for signed internal beta after clean-machine validation; not yet ready for public production release**.
+Overall release posture: **v1.0.0 is published as an unsigned community
+release with explicit SmartScreen and SHA-256 verification notes. Trusted
+code-signing and broader clean-machine/hardware validation remain follow-up
+hardening work, not hidden blockers for the current public release.**
 
 The core release blockers from the full audit have been addressed in code:
 
@@ -25,28 +28,28 @@ The core release blockers from the full audit have been addressed in code:
 - The WSL setup workflow now covers CPU, CUDA, and Vulkan prerequisites before source builds start.
 - Per-model launch settings now include vision image token allowances and map them to llama.cpp server flags.
 
-## Remaining External Release Gates
+## Remaining External Hardening Work
 
 ### Clean Windows VM validation
 
 - Severity: High
 - Area: Installation and onboarding
-- Status: Pending external validation
+- Status: Follow-up hardening
 - Required result: Published app launches with no repository checkout, creates state, shows clear prerequisite guidance, and does not require a developer SDK.
 
 ### Trusted signing and distribution
 
-- Severity: High for public release
+- Severity: High for reducing Windows trust warnings
 - Area: Distribution and trust
-- Status: Portable single-exe publish and Inno Setup installer source exist; signing support exists; certificate is not present in this repo
-- Required result: Public artifact is signed with a trusted certificate and distributed as a signed portable zip or installer with shortcut/uninstall flow.
+- Status: Portable single-exe publish and Inno Setup installer source exist; signing support exists; certificate is not present in this repo. The current public release is unsigned and labeled as such.
+- Required result: A future trusted release is signed with a trusted certificate and distributed as a signed portable zip or installer with shortcut/uninstall flow.
 
 ### GitHub update feed
 
-- Severity: Medium for v1 launch
+- Severity: Medium
 - Area: Distribution
-- Status: Update UI, staged installer, optional checksum verification, and signed-app signature continuity are implemented; final public repository and release asset naming must be confirmed before uploading v1
-- Required result: Latest GitHub release contains a signed `LlamaCppConsole.exe` or `LlamaCppConsole-win-x64.zip` asset, a matching SHA-256 companion asset, and release notes suitable for the completion popup.
+- Status: Update UI, staged installer, checksum verification, and signed-app signature continuity are implemented; the public repository and v1.0.0 asset naming are confirmed.
+- Required result: Latest GitHub release contains `LlamaCppConsole-win-x64.zip`, matching SHA-256 companion assets, and release notes suitable for the completion popup.
 
 ### WSL and hardware matrix
 
@@ -93,4 +96,6 @@ The latest local smoke test launched a published `LlamaCppConsole.exe`, confirme
 
 ## Release Decision
 
-Internal beta is acceptable after the clean-VM checklist passes and the beta artifact is signed or clearly marked internal-only. Public production release should wait for trusted signing, first-run diagnostics, installer smoke testing, and hardware matrix validation.
+v1.0.0 is acceptable as a clearly unsigned public community release. A future
+trusted/stable Windows distribution should add Authenticode signing, broader
+clean-machine smoke testing, and wider hardware matrix validation.

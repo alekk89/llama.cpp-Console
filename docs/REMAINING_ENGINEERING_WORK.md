@@ -23,9 +23,9 @@ These are codebase quality items that can continue locally without external inpu
 
 These are broader product items already implied by the release docs:
 
-- Clean Windows VM validation for a published app with no repo checkout.
-- Trusted signing and installer smoke testing on a clean Windows VM.
-- Confirm final GitHub update feed owner/repo and release asset naming.
+- Continue clean Windows VM validation for a published app with no repo checkout.
+- Add trusted signing and broaden installer smoke testing on clean Windows VMs.
+- Keep the GitHub update feed and release asset naming stable for future releases.
 - WSL/hardware matrix validation across missing WSL, CPU build tools, CUDA-visible WSL, Vulkan-visible WSL, and unsupported backends.
 - Benchmark WSL runtime source/build staging on `/mnt/<drive>` versus the distro's Linux filesystem; if Linux-side staging wins, preserve Windows-side metadata/cleanup semantics while copying only final runtime artifacts back to the workspace.
 - Runtime archive checksum/signature verification before future downloaded binary runtime registration.
