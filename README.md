@@ -16,7 +16,8 @@ or maintained by the `llama.cpp` or `ggml-org` projects.
 - Detects WSL, Ubuntu distros, CPU build tools, CUDA Toolkit, and Vulkan build
   prerequisites.
 - Builds CPU, CUDA, or Vulkan `llama.cpp` runtimes inside Ubuntu/WSL.
-- Starts and supervises `llama-server` with per-model launch profiles.
+- Starts and supervises `llama-server`, exposing its OpenAI-compatible `/v1`
+  endpoint for local clients with per-model launch profiles.
 - Shows live runtime metrics, token counters, logs, jobs, GPU summary, and model
   state in a WPF Overview page.
 - Preserves last-known token metrics during short runtime metric gaps.
@@ -43,6 +44,8 @@ Ubuntu/WSL without living in a terminal.
   bearer token for non-health API calls.
 - Model serving defaults to `127.0.0.1`; LAN mode maps model serving to
   `0.0.0.0` only after an explicit Settings change.
+- Model serving exposes the upstream `llama-server` OpenAI-compatible endpoint,
+  not the app-local control API.
 - Model serving requires a strong API key in both local-only and LAN modes.
 - The model API key is protected with Windows current-user DPAPI at rest.
 - Destructive deletes are bounded by app ownership and path-root checks.
