@@ -56,12 +56,3 @@ visibility.
   are now the preferred way to keep OpenCode endpoints stable.
 - If you previously built runtimes from source, you can keep them or install the
   matching official prebuilt runtime from **Runtimes**.
-
-## Release Assets
-
-Upload these assets with the GitHub release:
-
-- `LlamaCppConsole-Setup-1.1.0-win-x64.exe`
-- `LlamaCppConsole-Setup-1.1.0-win-x64.exe.sha256`
-- `LlamaCppConsole-win-x64.zip`
-- `LlamaCppConsole-win-x64.zip.sha256`
