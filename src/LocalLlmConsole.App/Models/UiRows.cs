@@ -31,15 +31,48 @@ public sealed class UiRow
 
 public sealed class EditableSettingRow : INotifyPropertyChanged
 {
+    private bool _isSecretVisible;
+    private string _type = "text";
     private string _value = "";
 
     public string Group { get; set; } = "";
     public string Label { get; set; } = "";
     public string Key { get; set; } = "";
-    public string Type { get; set; } = "text";
+    public string Type
+    {
+        get => _type;
+        set
+        {
+            if (_type == value) return;
+            _type = value;
+            OnPropertyChanged();
+            OnSecretActionPropertiesChanged();
+        }
+    }
     public string Action { get; set; } = "";
     public string ActionToolTip { get; set; } = "";
     public bool CanAction { get; set; }
+    public string RevealAction => Type == "secret" ? (IsSecretVisible ? "Hide" : "Show") : "";
+    public string RevealToolTip => Type == "secret"
+        ? IsSecretVisible ? "Hide the full API key." : "Show the full API key in the settings grid."
+        : "";
+    public bool CanRevealAction => Type == "secret" && !string.IsNullOrWhiteSpace(Value);
+    public string CopyAction => Type == "secret" ? "Copy" : "";
+    public string CopyToolTip => Type == "secret" ? "Copy the full API key to the clipboard." : "";
+    public bool CanCopyAction => Type == "secret" && !string.IsNullOrWhiteSpace(Value);
+    public bool IsSecretVisible
+    {
+        get => _isSecretVisible;
+        set
+        {
+            if (_isSecretVisible == value) return;
+            _isSecretVisible = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(DisplayValue));
+            OnPropertyChanged(nameof(RevealAction));
+            OnPropertyChanged(nameof(RevealToolTip));
+        }
+    }
     public ObservableCollection<string> Options { get; } = new();
     public string Value
     {
@@ -50,15 +83,34 @@ public sealed class EditableSettingRow : INotifyPropertyChanged
             _value = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(DisplayValue));
+            OnPropertyChanged(nameof(CanRevealAction));
+            OnPropertyChanged(nameof(CanCopyAction));
         }
     }
-    public string DisplayValue => Type == "secret" ? MaskSecret(Value) : Value;
+    public string DisplayValue => Type == "secret" ? IsSecretVisible ? SecretDisplayValue(Value) : MaskSecret(Value) : Value;
     public JsonObject Data { get; set; } = new();
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged([CallerMemberName] string? name = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
+    private void OnSecretActionPropertiesChanged()
+    {
+        OnPropertyChanged(nameof(DisplayValue));
+        OnPropertyChanged(nameof(RevealAction));
+        OnPropertyChanged(nameof(RevealToolTip));
+        OnPropertyChanged(nameof(CanRevealAction));
+        OnPropertyChanged(nameof(CopyAction));
+        OnPropertyChanged(nameof(CopyToolTip));
+        OnPropertyChanged(nameof(CanCopyAction));
+    }
+
+    private static string SecretDisplayValue(string value)
+    {
+        var secret = (value ?? "").Trim();
+        return string.IsNullOrWhiteSpace(secret) ? "not set" : secret;
+    }
 
     private static string MaskSecret(string value)
     {

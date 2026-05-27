@@ -62,6 +62,7 @@ public partial class MainWindow
         grid.Columns.Add(new DataGridTextColumn { Header = "Group", Binding = new WpfBinding(nameof(EditableSettingRow.Group)), IsReadOnly = true, ElementStyle = textStyle, MinWidth = 80, Width = new DataGridLength(120), CanUserResize = true });
         grid.Columns.Add(new DataGridTextColumn { Header = "Setting", Binding = new WpfBinding(nameof(EditableSettingRow.Label)), IsReadOnly = true, ElementStyle = textStyle, MinWidth = 110, Width = new DataGridLength(180), CanUserResize = true });
         grid.Columns.Add(SettingsValueColumn());
+        grid.Columns.Add(SettingsSecretActionsColumn());
         AddButtonColumn(grid, "Action", nameof(EditableSettingRow.Action), nameof(EditableSettingRow.CanAction), SettingsRowAction_Click, .75, tooltipBinding: nameof(EditableSettingRow.ActionToolTip));
         root.Children.Add(GridFrame(grid));
         PageHost.Content = root;
@@ -103,6 +104,35 @@ public partial class MainWindow
 
             row.Value = Path.GetFullPath(folder);
             SetStatus($"{row.Label} folder selected. Save settings to apply it.");
+        });
+    }
+
+    private async void SettingsRevealSecretRow_Click(object sender, RoutedEventArgs e)
+    {
+        await RunEventAsync(() =>
+        {
+            if (sender is not WpfButton { Tag: EditableSettingRow { Type: "secret" } row }) return Task.CompletedTask;
+            row.IsSecretVisible = !row.IsSecretVisible;
+            SetStatus(row.IsSecretVisible ? "API key is visible in Settings." : "API key hidden.");
+            return Task.CompletedTask;
+        });
+    }
+
+    private async void SettingsCopySecretRow_Click(object sender, RoutedEventArgs e)
+    {
+        await RunEventAsync(() =>
+        {
+            if (sender is not WpfButton { Tag: EditableSettingRow { Type: "secret" } row }) return Task.CompletedTask;
+            var value = (row.Value ?? "").Trim();
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                SetStatus("No API key is available to copy.");
+                return Task.CompletedTask;
+            }
+
+            System.Windows.Clipboard.SetText(value);
+            SetStatus("API key copied to clipboard.");
+            return Task.CompletedTask;
         });
     }
 
@@ -217,5 +247,51 @@ public partial class MainWindow
             CanUserResize = true,
             CellTemplate = new DataTemplate { VisualTree = root }
         };
+    }
+
+    private DataGridTemplateColumn SettingsSecretActionsColumn()
+    {
+        var root = new FrameworkElementFactory(typeof(StackPanel));
+        root.SetValue(StackPanel.OrientationProperty, System.Windows.Controls.Orientation.Horizontal);
+        root.SetValue(FrameworkElement.MarginProperty, new Thickness(0, 0, 4, 0));
+        var rootStyle = new Style(typeof(StackPanel));
+        rootStyle.Setters.Add(new Setter(UIElement.VisibilityProperty, Visibility.Collapsed));
+        var showForSecret = new DataTrigger { Binding = new WpfBinding(nameof(EditableSettingRow.Type)), Value = "secret" };
+        showForSecret.Setters.Add(new Setter(UIElement.VisibilityProperty, Visibility.Visible));
+        rootStyle.Triggers.Add(showForSecret);
+        root.SetValue(FrameworkElement.StyleProperty, rootStyle);
+
+        var revealButton = SettingsSecretActionButton(nameof(EditableSettingRow.RevealAction), nameof(EditableSettingRow.CanRevealAction), nameof(EditableSettingRow.RevealToolTip));
+        revealButton.AddHandler(WpfButton.ClickEvent, new RoutedEventHandler(SettingsRevealSecretRow_Click));
+        root.AppendChild(revealButton);
+
+        var copyButton = SettingsSecretActionButton(nameof(EditableSettingRow.CopyAction), nameof(EditableSettingRow.CanCopyAction), nameof(EditableSettingRow.CopyToolTip));
+        copyButton.AddHandler(WpfButton.ClickEvent, new RoutedEventHandler(SettingsCopySecretRow_Click));
+        root.AppendChild(copyButton);
+
+        return new DataGridTemplateColumn
+        {
+            Header = "Secret",
+            Width = new DataGridLength(.95, DataGridLengthUnitType.Star),
+            MinWidth = 132,
+            CanUserResize = true,
+            CellTemplate = new DataTemplate { VisualTree = root }
+        };
+    }
+
+    private static FrameworkElementFactory SettingsSecretActionButton(string contentBinding, string enabledBinding, string tooltipBinding)
+    {
+        var button = new FrameworkElementFactory(typeof(WpfButton));
+        button.SetBinding(ContentControl.ContentProperty, new WpfBinding(contentBinding));
+        button.SetBinding(UIElement.IsEnabledProperty, new WpfBinding(enabledBinding));
+        button.SetBinding(FrameworkElement.ToolTipProperty, new WpfBinding(tooltipBinding));
+        button.SetBinding(FrameworkElement.TagProperty, new WpfBinding("."));
+        button.SetValue(ToolTipService.ShowOnDisabledProperty, true);
+        button.SetValue(FrameworkElement.MinHeightProperty, 22.0);
+        button.SetValue(System.Windows.Controls.Control.PaddingProperty, new Thickness(7, 1, 7, 2));
+        button.SetValue(FrameworkElement.MarginProperty, new Thickness(2, 1, 2, 1));
+        button.SetValue(FrameworkElement.HorizontalAlignmentProperty, System.Windows.HorizontalAlignment.Stretch);
+        button.SetValue(FrameworkElement.StyleProperty, new Style(typeof(WpfButton), (Style)WpfApplication.Current.Resources[typeof(WpfButton)]));
+        return button;
     }
 }

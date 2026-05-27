@@ -307,6 +307,25 @@ public sealed partial class ReleaseHardeningTests
 
 
     [Fact]
+    public void SettingsApiKeyCanBeShownAndCopied()
+    {
+        var settings = File.ReadAllText(FindRepositoryFile("src", "LocalLlmConsole.App", "MainWindow.Settings.cs"));
+        var rows = File.ReadAllText(FindRepositoryFile("src", "LocalLlmConsole.App", "Models", "UiRows.cs"));
+
+        Assert.Contains("new(\"Network\", \"API key\", \"modelApiKey\", _settings.ModelApiKey, \"secret\", Action: \"Generate\")", settings, StringComparison.Ordinal);
+        Assert.Contains("SettingsSecretActionsColumn", settings, StringComparison.Ordinal);
+        Assert.Contains("SettingsRevealSecretRow_Click", settings, StringComparison.Ordinal);
+        Assert.Contains("SettingsCopySecretRow_Click", settings, StringComparison.Ordinal);
+        Assert.Contains("Clipboard.SetText(value)", settings, StringComparison.Ordinal);
+        Assert.Contains("API key copied to clipboard.", settings, StringComparison.Ordinal);
+        Assert.Contains("IsSecretVisible", rows, StringComparison.Ordinal);
+        Assert.Contains("RevealAction", rows, StringComparison.Ordinal);
+        Assert.Contains("CopyAction", rows, StringComparison.Ordinal);
+        Assert.Contains("Type == \"secret\" ? IsSecretVisible", rows, StringComparison.Ordinal);
+    }
+
+
+    [Fact]
     public void SettingsNumericEditsFailClosed()
     {
         var persistence = File.ReadAllText(FindRepositoryFile("src", "LocalLlmConsole.App", "MainWindow.SettingsPersistence.cs"));
