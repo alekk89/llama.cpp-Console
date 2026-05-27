@@ -260,6 +260,7 @@ public sealed partial class ReleaseHardeningTests
         var xaml = File.ReadAllText(FindRepositoryFile("src", "LocalLlmConsole.App", "MainWindow.xaml"));
         var source = ReadMainWindowSources();
         var project = File.ReadAllText(FindRepositoryFile("src", "LocalLlmConsole.App", "LocalLlmConsole.App.csproj"));
+        var themedMessageBox = File.ReadAllText(FindRepositoryFile("src", "LocalLlmConsole.App", "ThemedMessageBox.cs"));
 
         Assert.Contains("x:Name=\"UpdatesNavButton\"", xaml, StringComparison.Ordinal);
         Assert.Contains("x:Name=\"HelpNavButton\"", xaml, StringComparison.Ordinal);
@@ -277,6 +278,15 @@ public sealed partial class ReleaseHardeningTests
         Assert.Contains("CacheMaintenanceService.Size(_settings.CacheRoot)", source, StringComparison.Ordinal);
         Assert.Contains("ClearCacheAsync", source, StringComparison.Ordinal);
         Assert.Contains("<RepositoryUrl>https://github.com/alekk89/llama.cpp-Console</RepositoryUrl>", project, StringComparison.Ordinal);
+
+        var updatesStart = source.IndexOf("private void ShowUpdates()", StringComparison.Ordinal);
+        Assert.True(updatesStart >= 0);
+        Assert.True(
+            source.IndexOf("actions.Children.Add(Button(_viewModel.Updates.ActionText", updatesStart, StringComparison.Ordinal)
+            < source.IndexOf("FramedSection(\"Update Status\"", updatesStart, StringComparison.Ordinal));
+        Assert.Contains("MaxHeight = DialogMaxHeight(owner)", themedMessageBox, StringComparison.Ordinal);
+        Assert.Contains("DialogMessageMaxHeight", themedMessageBox, StringComparison.Ordinal);
+        Assert.Contains("VerticalScrollBarVisibility = ScrollBarVisibility.Auto", themedMessageBox, StringComparison.Ordinal);
     }
 
 

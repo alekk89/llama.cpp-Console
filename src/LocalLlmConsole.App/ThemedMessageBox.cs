@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Forms = System.Windows.Forms;
 using WpfBrushes = System.Windows.Media.Brushes;
 using WpfBrush = System.Windows.Media.Brush;
 using WpfButton = System.Windows.Controls.Button;
@@ -27,7 +28,8 @@ public static class ThemedMessageBox
             AllowsTransparency = true,
             ShowInTaskbar = owner is null,
             MinWidth = 360,
-            MaxWidth = 620
+            MaxWidth = 620,
+            MaxHeight = DialogMaxHeight(owner)
         };
 
         var root = new Border
@@ -92,8 +94,15 @@ public static class ThemedMessageBox
             Foreground = Brush("TextSoft"),
             MaxWidth = 520
         };
-        Grid.SetColumn(messageText, 1);
-        body.Children.Add(messageText);
+        var messageViewer = new ScrollViewer
+        {
+            Content = messageText,
+            MaxHeight = DialogMessageMaxHeight(owner),
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled
+        };
+        Grid.SetColumn(messageViewer, 1);
+        body.Children.Add(messageViewer);
         Grid.SetRow(body, 1);
         layout.Children.Add(body);
 
@@ -138,6 +147,28 @@ public static class ThemedMessageBox
         dialog.ShowDialog();
         return result;
     }
+
+    private static double DialogMaxHeight(Window? owner)
+    {
+        var workAreaHeight = SystemParameters.WorkArea.Height;
+        if (owner is not null)
+        {
+            var handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+            var workingArea = Forms.Screen.FromHandle(handle).WorkingArea;
+            var source = PresentationSource.FromVisual(owner);
+            if (source?.CompositionTarget is not null)
+            {
+                var top = source.CompositionTarget.TransformFromDevice.Transform(new System.Windows.Point(workingArea.Left, workingArea.Top));
+                var bottom = source.CompositionTarget.TransformFromDevice.Transform(new System.Windows.Point(workingArea.Right, workingArea.Bottom));
+                workAreaHeight = Math.Max(360, bottom.Y - top.Y);
+            }
+        }
+
+        return Math.Max(360, workAreaHeight - 80);
+    }
+
+    private static double DialogMessageMaxHeight(Window? owner)
+        => Math.Max(160, DialogMaxHeight(owner) - 178);
 
     private static WpfBrush Brush(string key)
         => (WpfBrush)(System.Windows.Application.Current.TryFindResource(key) ?? WpfBrushes.White);

@@ -20,6 +20,17 @@ public partial class MainWindow
         var root = Stack();
         root.Margin = new Thickness(16);
 
+        var actions = Bar();
+        actions.Children.Add(Button(_viewModel.Updates.ActionText, async (_, _) =>
+        {
+            if (_viewModel.Updates.LatestUpdate is { IsAvailable: true } available)
+                await InstallAppUpdateAsync(available, confirm: true);
+            else
+                await CheckForAppUpdatesAsync(manual: true);
+        }));
+        actions.Children.Add(Button("Open GitHub", (_, _) => OpenUrl(AppUpdateService.RepositoryUrl)));
+        root.Children.Add(actions);
+
         root.Children.Add(FramedSection("Update Status", new TextBlock
         {
             Text = _viewModel.Updates.StatusDetails,
@@ -36,17 +47,6 @@ public partial class MainWindow
                 TextWrapping = TextWrapping.Wrap
             }));
         }
-
-        var actions = Bar();
-        actions.Children.Add(Button(_viewModel.Updates.ActionText, async (_, _) =>
-        {
-            if (_viewModel.Updates.LatestUpdate is { IsAvailable: true } available)
-                await InstallAppUpdateAsync(available, confirm: true);
-            else
-                await CheckForAppUpdatesAsync(manual: true);
-        }));
-        actions.Children.Add(Button("Open GitHub", (_, _) => OpenUrl(AppUpdateService.RepositoryUrl)));
-        root.Children.Add(actions);
 
         PageHost.Content = root;
     }
